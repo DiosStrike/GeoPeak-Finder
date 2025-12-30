@@ -1,56 +1,80 @@
+"""
+Pittsburgh Urban Risk Analytics Interface
+Interactive Web Application for Topographical Digital Twin Visualization and Risk Assessment.
+"""
+
 import streamlit as st
 from PIL import Image
 
-# Configuration / 页面配置
-st.set_page_config(page_title="Pittsburgh Urban Risk Engine")
+# Global configuration for the analytical interface
+st.set_page_config(page_title="Pittsburgh Urban Risk Analytics Engine", layout="wide")
 
-# --- Sidebar / 侧边栏 ---
-st.sidebar.title("Project Details / 项目详情")
-st.sidebar.info("""
-**Author / 作者**: Tanghao Chen (Dios)
-**Core Technologies / 核心技术**: 
-- Neural Network Digital Twin / 神经网络数字孪生
-- Stochastic Gradient Ascent (SGA) / 随机梯度上升
-- Automatic Differentiation (Autograd) / 自动微分
+# --- Sidebar: Project Metadata & Methodologies ---
+st.sidebar.header("Project Metadata")
+st.sidebar.markdown("""
+**Principal Investigator**: Tanghao Chen (Dios)  
+**Academic Affiliation**: CMU AI Engineering - Civil & Environmental Engineering  
+
+**Core Methodologies**:
+* **Neural Surface Fitting**: MLP-based coordinate regression.
+* **Global Optimization**: Multi-start Stochastic Gradient Ascent (SGA).
+* **Geospatial Analytics**: Automatic Differentiation for slope magnitude computation.
 """)
 
-# --- Main Title / 主标题 ---
-st.title("Pittsburgh Urban Risk Engine / 匹兹堡城市风险分析引擎")
+# --- Main Interface Header ---
+st.title("Urban Risk Analytics Engine: Pittsburgh Topographical Digital Twin")
 st.markdown("""
-This project utilizes Deep Learning to construct a **Digital Twin** of Pittsburgh's terrain, enabling multi-dimensional environmental risk assessments. 
-本项目利用深度学习技术构建了匹兹堡地形的**数字孪生体**，并基于此模型进行多维度的环境风险评估。
+This analytical platform integrates Deep Learning with Geospatial Engineering to construct a **Differentiable Digital Twin** of the Pittsburgh region. 
+The system facilitates quantitative environmental risk assessment through neural surface inference and gradient-based optimization algorithms.
 """)
 
-# --- Tabs / 选项卡切换 ---
+st.divider()
+
+# --- Analytical Modules (Tabs) ---
 tab1, tab2, tab3 = st.tabs([
-    "Terrain Optimization / 基础地形寻优", 
-    "Flood Analysis / 洪涝分析", 
-    "Landslide Risk / 滑坡风险"
+    "Global Maximum Identification", 
+    "Hydraulic Sink Analysis", 
+    "Geotechnical Slope Criticality"
 ])
 
 with tab1:
-    st.header("Highest Peak Localization / 梯度上升寻优")
-    image = Image.open('results/1_basic_gradient_map.png')
-    st.image(image, caption="Highest altitude point identified via SGA / 基于 SGA 算法定位的城市最高点")
-    st.write("""
-    Using Stochastic Gradient Ascent, the model accurately localized the Robert Williams Reservoir as the geographic peak within the digital twin.
-    利用随机梯度上升算法，模型在数字孪生模型中精准定位了 Robert Williams Reservoir 这一地理制高点。
+    st.subheader("Topographical Peak Localization via Gradient Ascent")
+    try:
+        image = Image.open('results/1_basic_gradient_map.png')
+        st.image(image, caption="Figure 1: Geographic peak identification via neural surface optimization.")
+    except FileNotFoundError:
+        st.error("Asset '1_basic_gradient_map.png' not found in /results directory.")
+        
+    st.markdown("""
+    **Technical Summary**:  
+    Utilizing Stochastic Gradient Ascent (SGA) on the neural terrain surface, the engine identifies global elevation maxima. 
+    The model accurately localized the **Robert Williams Reservoir** as the primary geographic peak within the study area.
     """)
 
 with tab2:
-    st.header("Watershed & Sink Detection / 汇水点内涝评估")
-    image = Image.open('results/2_flood_risk_analysis.png')
-    st.image(image, caption="Flood risk zones simulated via surface runoff / 模拟地表径流生成的内涝高风险区")
-    st.write("""
-    By reversing the gradient direction, the model identifies local minima (Sinks), representing areas with significant water accumulation risk during extreme precipitation.
-    通过反转梯度方向，模型识别出了城市中的局部极小值点（Sinks），这些区域在极端降水天气下具有极高的积水风险。
+    st.subheader("Hydraulic Sink Detection & Flooding Susceptibility")
+    try:
+        image = Image.open('results/2_flood_risk_analysis.png')
+        st.image(image, caption="Figure 2: Spatial distribution of hydraulic sinks indicating high-intensity accumulation risk.")
+    except FileNotFoundError:
+        st.error("Asset '2_flood_risk_analysis.png' not found in /results directory.")
+
+    st.markdown("""
+    **Technical Summary**:  
+    By executing gradient descent across the differentiable surface, the system identifies localized topographical minima (Hydraulic Sinks). 
+    These points represent critical accumulation zones susceptible to urban flooding during extreme precipitation events.
     """)
 
 with tab3:
-    st.header("Slope & Landslide Monitoring / 坡度滑坡监测")
-    image = Image.open('results/3_landslide_risk_analysis.png')
-    st.image(image, caption="High-risk slope boundaries calculated via Autograd / 基于自动微分计算的高风险坡度警戒线")
-    st.write("""
-    Leveraging PyTorch's Automatic Differentiation, the engine calculates global slope magnitude. Red contours delineate zones exceeding safe steepness thresholds for landslide risk.
-    利用 PyTorch 的自动微分功能，引擎计算了地形的全域坡度。红色线条标出了坡度超过安全阈值的高危滑坡区域。
+    st.subheader("Geotechnical Risk Assessment: Slope Criticality")
+    try:
+        image = Image.open('results/3_landslide_risk_analysis.png')
+        st.image(image, caption="Figure 3: Landslide susceptibility zones delineated via slope gradient thresholds.")
+    except FileNotFoundError:
+        st.error("Asset '3_landslide_risk_analysis.png' not found in /results directory.")
+
+    st.markdown("""
+    **Technical Summary**:  
+    Leveraging PyTorch-based Automatic Differentiation (Autograd), the engine computes the first-order partial derivatives of the terrain surface. 
+    The red contour lines delineate zones exceeding critical slope thresholds, indicating high landslide susceptibility.
     """)

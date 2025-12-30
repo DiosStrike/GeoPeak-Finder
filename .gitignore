@@ -1,24 +1,33 @@
-# --- 必须忽略的文件夹 ---
-# 虚拟环境（绝对不能传，因为体积巨大且每个人电脑环境不同）
+# Python Environment
 venv/
 .venv/
 env/
+bin/
+include/
+lib/
+share/
 
-# Python 运行缓存（这是自动生成的，不需要传）
+# Python Cache
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
-# --- 保护你的模型和数据 ---
-# 忽略所有训练好的模型权重文件（.pth 文件通常很大，GitHub 不适合存大文件）
+# Model Artifacts
 models/*.pth
+models/*.pt
+models/*.onnx
 
-# 忽略原始数据文件夹（如果你的 data 文件夹里是几百 MB 的地理高程数据，建议忽略）
+# Local Data Storage
 # data/
+results/*.png
+results/*.pdf
 
-# --- 操作系统与 IDE ---
-.DS_Store
+# IDE & System Files
 .vscode/
 .idea/
+.DS_Store
+Thumbs.db
 
-# --- Streamlit 相关 ---
+# Streamlit Configuration
 .streamlit/
