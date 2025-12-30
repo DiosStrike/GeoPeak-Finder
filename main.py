@@ -2,70 +2,80 @@
 
 import torch
 import os
+import numpy as np
+from src import engine
+from src import visualizer
 from src.model import ElevationNet
-from src.engine import train_elevation_model, find_highest_peak
 from src.utils import load_pittsburgh_data, create_prediction_grid
-from src.visualizer import plot_pittsburgh_contour
 
 def main():
-    # --- 1. 环境准备 ---
+    # --- 1. 初始化 ---
     DATA_PATH = "data/PittsburghMap.xlsx"
     MODEL_SAVE_PATH = "models/elevation_model.pth"
+    os.makedirs("results", exist_ok=True)
     
-    # --- 2. 加载与预处理数据 ---
-    print("Loading and preprocessing data...")
+    # --- 2. 数据与模型准备 ---
+    print("🚀 Step 1: Loading Data & Model...")
     data_tensors, scaler_X, scaler_y, bounds = load_pittsburgh_data(DATA_PATH)
-    
-    # --- 3. 初始化模型与训练 ---
-    print("Initializing Neural Network...")
     model = ElevationNet()
-    
-    # 如果已有训练好的模型则加载，否则训练
     if os.path.exists(MODEL_SAVE_PATH):
-        print("Loading pre-trained model...")
         model.load_state_dict(torch.load(MODEL_SAVE_PATH))
     else:
-        print("Starting training...")
-        model, _ = train_elevation_model(
-            model, 
-            data_tensors['X_train'], 
-            data_tensors['y_train']
-        )
+        print("🔥 Training model...")
+        model, _ = engine.train_elevation_model(model, data_tensors['X_train'], data_tensors['y_train'])
         torch.save(model.state_dict(), MODEL_SAVE_PATH)
-        print(f"Model saved to {MODEL_SAVE_PATH}")
 
-    # --- 4. 寻找最高点 (寻优逻辑) ---
-    print("Executing Gradient Ascent to find peak...")
-    peak_loc, peak_alt = find_highest_peak(
-        model, scaler_X, scaler_y, bounds
-    )
+    # --- 3. 核心计算 (AI 引擎) ---
+    print("🏔️ Calculating: Highest Peak (Gradient Ascent)...")
+    peak_loc, peak_alt = engine.find_highest_peak(model, scaler_X, scaler_y, bounds)
     
-    # --- 5. 结果展示 ---
-    print("-" * 30)
-    print(f"Peak Found at: Lon {peak_loc[0]:.4f}, Lat {peak_loc[1]:.4f}")
-    print(f"Predicted Altitude: {peak_alt:.2f} m")
-    print(f"Location Name: Robert Williams Reservoir")
-    print(f"Google Maps: https://www.google.com/maps?q={peak_loc[1]},{peak_loc[0]}")
-    print("-" * 30)
+    print("🌊 Calculating: Flood Sinks (Gradient Descent)...")
+    flood_sinks_scaled = engine.find_flooding_sinks(model, num_droplets=100)
+    flood_sinks = scaler_X.inverse_transform(flood_sinks_scaled)
 
-    # --- 6. 可视化 ---
-    print("Generating contour map...")
+    print("⛰️ Calculating: Slope Magnitude (Autograd)...")
     grid_points, lon_mesh, lat_mesh = create_prediction_grid(bounds)
-    
-    # 预测网格高度
-    grid_tensor = torch.FloatTensor(scaler_X.transform(grid_points))
+    grid_points_scaled = scaler_X.transform(grid_points)
+    slope_values = engine.calculate_slope(model, grid_points_scaled)
+    slope_mesh = slope_values.reshape(100, 100)
+
+    # 准备地形高度数据
+    grid_tensor = torch.FloatTensor(grid_points_scaled)
     model.eval()
     with torch.no_grad():
-        alt_pred_scaled = model(grid_tensor)
-        alt_pred = scaler_y.inverse_transform(alt_pred_scaled.numpy())
-    
+        alt_pred = scaler_y.inverse_transform(model(grid_tensor).numpy())
     altitude_mesh = alt_pred.reshape(100, 100)
-    
-    plot_pittsburgh_contour(
+
+    # --- 4. 生成三张独立报告图 ---
+    print("🎨 Step 3: Generating Three Separate Engineering Maps...")
+
+    # 【图 1】 基础梯度图：展示地形 + 梯度上升找到的最高点
+    visualizer.plot_pittsburgh_contour(
         lon_mesh, lat_mesh, altitude_mesh, 
         peak_loc, peak_alt, 
-        save_path="models/contour_result.png"
+        save_path="results/1_basic_gradient_map.png"
     )
+
+    # 【图 2】 洪涝风险图：展示地形 + 蓝色汇水点分析
+    visualizer.plot_flood_risk(
+        lon_mesh, lat_mesh, altitude_mesh, 
+        peak_loc, flood_sinks, 
+        save_path="results/2_flood_risk_analysis.png"
+    )
+
+    # 【图 3】 滑坡风险图：展示地形 + 红色高危坡度警戒线
+    visualizer.plot_landslide_risk(
+        lon_mesh, lat_mesh, altitude_mesh, slope_mesh, 
+        peak_loc, 
+        save_path="results/3_landslide_risk_analysis.png"
+    )
+
+    print("-" * 50)
+    print("✅ 所有分析完成！请在 results 文件夹查看三张专业图纸：")
+    print("📂 1. 基础梯度图 (Gradient Map)")
+    print("📂 2. 洪涝分析图 (Flood Risk)")
+    print("📂 3. 滑坡预警图 (Landslide Risk)")
+    print("-" * 50)
 
 if __name__ == "__main__":
     main()

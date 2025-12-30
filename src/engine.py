@@ -90,3 +90,58 @@ def find_highest_peak(model, scaler_X, scaler_y, bounds,
             best_location = location.detach().numpy()[0]
             
     return best_location, best_altitude
+
+
+import torch
+
+def find_flooding_sinks(model, num_droplets=50, iterations=100, learning_rate=0.01):
+    """
+    通过梯度下降寻找地形的局部最低点（汇水点）
+    """
+    model.eval()
+    # 1. 随机在地图上洒下“水滴”作为起始点
+    # 假设经纬度范围已归一化在 [0, 1] 之间
+    droplets = torch.rand((num_droplets, 2), requires_grad=True)
+    
+    optimizer = torch.optim.SGD([droplets], lr=learning_rate)
+
+    for i in range(iterations):
+        optimizer.zero_grad()
+        # 我们要最小化海拔高度，所以直接把预测值作为 Loss
+        altitude = model(droplets)
+        loss = altitude.sum() 
+        
+        loss.backward()
+        optimizer.step()
+        
+        # 约束水滴不超出地图边界
+        with torch.no_grad():
+            droplets.clamp_(0, 1)
+
+    # 返回最终汇集的坐标点
+    return droplets.detach().numpy()
+
+
+def calculate_slope(model, grid_points_scaled):
+    """
+    利用 PyTorch 自动微分计算全域坡度
+    """
+    model.eval()
+    # 转换为 Tensor 并开启梯度追踪
+    inputs = torch.FloatTensor(grid_points_scaled).requires_grad_(True)
+    
+    # 前向传播得到预测海拔
+    altitudes = model(inputs)
+    
+    # 利用自动微分计算梯度: dz/dx 和 dz/dy
+    gradients = torch.autograd.grad(
+        outputs=altitudes, 
+        inputs=inputs,
+        grad_outputs=torch.ones_like(altitudes),
+        create_graph=False
+    )[0]
+    
+    # 计算梯度模长（即坡度）
+    slope_mag = torch.sqrt(torch.sum(gradients**2, dim=1))
+    
+    return slope_mag.detach().numpy()
