@@ -9,6 +9,9 @@
 <a name="english-version"></a>
 # English Version
 
+**Live Demo** 
+* **Public Link**: https://geopeak-finder-qumxnbzjdabafzeyjla6cs.streamlit.app
+
 **Project Overview**
 GeoPeak-Finder is an AI-driven geospatial project designed to create a Terrain Digital Twin of the Pittsburgh area. By fitting discrete elevation data with PyTorch Neural Networks, the system generates a differentiable surface used for automated peak identification via Multi-start Gradient Ascent (SGA) and advanced environmental risk analysis.
 
@@ -61,6 +64,9 @@ streamlit run app.py
 ### 基于深度学习的地形建模与多起点梯度上升算法实现
 
 ---
+
+**在线演示**
+* **链接:** https://geopeak-finder-qumxnbzjdabafzeyjla6cs.streamlit.app
 
 **项目简介**
 项目概览 GeoPeak-Finder 是一个人工智能驱动的地理空间项目，旨在构建匹兹堡地区的地形数字孪生（Digital Twin）。通过利用 PyTorch 神经网络拟合离散的高程数据，系统生成了一个可微的曲面，用于通过多起点梯度上升算法（SGA）进行自动峰值识别和高级环境风险分析。
